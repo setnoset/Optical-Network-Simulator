@@ -123,7 +123,6 @@ public class ALLPI implements RA {
                 }
             }
         }
-        //System.out.println("block");
         cp.blockFlow(flow.getID());
     }
     
