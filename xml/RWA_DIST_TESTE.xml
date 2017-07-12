@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <wdmsim version="1.0">
-    <ra module="MyRWA"/>
+    <ra module="SP"/>
 
     <trace file="trace.tr"/>
     <!--rate in Mbps 1000Mbps = 1Gbps | 'cos' represents the number of service classes-->
-    <traffic calls="1000000" load="100" cos="1" max-rate="40000">
+    <traffic calls="100000" load="100" cos="1" max-rate="40000" OSNR="10000.0" PMD="7e-14" delta="2.5e-12" exponencial="0">
         <!--'cos' here starts with '0'-->
         <calls holding-time="1" rate="40000" cos="0" weight="1"/>
     </traffic>
