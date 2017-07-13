@@ -2,7 +2,6 @@ package ons.ra;
 
 import static java.lang.Math.log10;
 import static java.lang.Math.sqrt;
-import java.util.Arrays;
 import ons.Flow;
 import ons.LightPath;
 import ons.WDMLightPath;
@@ -12,7 +11,7 @@ import ons.util.WeightedGraph;
 
 /**
  * ALLPI - 
- *
+ * 
  */
 public class ALLPI implements RA {
     
@@ -41,7 +40,7 @@ public class ALLPI implements RA {
         LightPath[] lps2 = new LightPath[1];
         // Shortest-Path routing
         nodes = Dijkstra.getShortestPath(graph, flow.getSource(), flow.getDestination());
-
+        
         // If no possible path found, block the call
         if (nodes.length == 0) {
             cp.blockFlow(flow.getID()); 
@@ -105,9 +104,9 @@ public class ALLPI implements RA {
                 wvls2[j] = i;
             }
             // Now you create the lightpath to use the createLightpath VT
-            WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
+            WDMLightPath lp2 = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
             // Now you try to establish the new lightpath, accept the call
-            if ((id2 = cp.getVT().createLightpath(lp)) >= 0) {
+            if ((id2 = cp.getVT().createLightpath(lp2)) >= 0) {
                 // Single-hop routing (end-to-end lightpath)
                 lps2[0] = cp.getVT().getLightpath(id2);
                 if (cp.acceptFlow(flow.getID(), lps2)) {

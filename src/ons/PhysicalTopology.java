@@ -183,6 +183,15 @@ public abstract class PhysicalTopology {
         return g;
     }
     
+    public boolean CheckLinkThreshold(int links[], int threshold){
+        for (int i = 0; i < links.length - 1; i++) {
+            if (getLink(links[i],links[i+1]).getUsage()>threshold) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * 
      * 

@@ -29,6 +29,8 @@ public class ALLPI_PLUS implements RA {
     @Override
     public void flowArrival(Flow flow) {
         double rate = flow.getRate()/1000;
+        boolean checkThreshold;
+        int threshold = 28;
         int[] nodes;
         int[] nodes2;
         int[] links;
@@ -47,24 +49,22 @@ public class ALLPI_PLUS implements RA {
             cp.blockFlow(flow.getID()); 
             return;
         }
-
+        
         // Create the links vector
         links = new int[nodes.length - 1];
         for (int j = 0; j < nodes.length - 1; j++) {
             links[j] = cp.getPT().getLink(nodes[j], nodes[j + 1]).getID();
         }
-
+        checkThreshold = cp.getPT().CheckLinkThreshold(links, threshold);
         
-        // First-Fit wavelength assignment
-        wvls = new int[links.length];
-        for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
-            // Create the wavelengths vector
-            for (int j = 0; j < links.length; j++) {
-                wvls[j] = i;
+        if(checkThreshold==false){
+            wvls = new int[links.length];
+            for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
+                for (int j = 0; j < links.length; j++) {
+                    wvls[j] = i;
+                }
             }
-            // Now you create the lightpath to use the createLightpath VT
             WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links, wvls);
-            // Now you try to establish the new lightpath, accept the call
             if ((id = cp.getVT().createLightpath(lp)) >= 0) {
                 // Single-hop routing (end-to-end lightpath)
                 lps[0] = cp.getVT().getLightpath(id);
@@ -78,52 +78,91 @@ public class ALLPI_PLUS implements RA {
                     // Dealocates the lightpath in VT and try again
                     cp.getVT().deallocatedLightpath(id);
                 }
+            this.graphALLPI = cp.getPT().getUsageGraph();
+            nodes2 = Dijkstra.getShortestPath(graphALLPI, flow.getSource(), flow.getDestination());
+            // Create the links vector
+            links2 = new int[nodes2.length - 1];
+            for (int j = 0; j < nodes2.length - 1; j++) {
+                links2[j] = cp.getPT().getLink(nodes2[j], nodes2[j + 1]).getID();
             }
-        }
-        
-        this.graphALLPI = cp.getPT().getUsageGraph();
-        nodes2 = Dijkstra.getShortestPath(graphALLPI, flow.getSource(), flow.getDestination());
-        // Create the links vector
-        links2 = new int[nodes2.length - 1];
-        for (int j = 0; j < nodes2.length - 1; j++) {
-            links2[j] = cp.getPT().getLink(nodes2[j], nodes2[j + 1]).getID();
-        }
-        
-        
-        // PHYSICAL
-        
-        if (checkPhysicalLink(links2,rate) == false) {
-            cp.blockFlow(flow.getID()); 
-            return;
-        }
-        
-        // First-Fit wavelength assignment
-        wvls2 = new int[links2.length];
-        for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
-            // Create the wavelengths vector
-            for (int j = 0; j < links2.length; j++) {
-                wvls2[j] = i;
+            // PHYSICAL
+            if (checkPhysicalLink(links2,rate) == false) {
+                cp.blockFlow(flow.getID()); 
+                return;
             }
-            // Now you create the lightpath to use the createLightpath VT
-            WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
-            // Now you try to establish the new lightpath, accept the call
-            if ((id2 = cp.getVT().createLightpath(lp)) >= 0) {
-                // Single-hop routing (end-to-end lightpath)
-                lps2[0] = cp.getVT().getLightpath(id2);
-                if (cp.acceptFlow(flow.getID(), lps2)) {
-                    for(int l=0; l<(nodes2.length-1);l++){
-                        cp.getPT().getLink(nodes2[l], nodes2[l+1]).addUsage();
-                        //System.out.println("Uso entre no "+nodes[l]+" e no "+nodes[l+1]+" = "+cp.getPT().getLink(nodes[l], nodes[l+1]).getUsage());
+            wvls2 = new int[links2.length];
+            for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
+                // Create the wavelengths vector
+                for (int j = 0; j < links2.length; j++) {
+                    wvls2[j] = i;
+                }
+                // Now you create the lightpath to use the createLightpath VT
+                WDMLightPath lp2 = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
+                // Now you try to establish the new lightpath, accept the call
+                if ((id2 = cp.getVT().createLightpath(lp2)) >= 0) {
+                    // Single-hop routing (end-to-end lightpath)
+                    lps2[0] = cp.getVT().getLightpath(id2);
+                    if (cp.acceptFlow(flow.getID(), lps2)) {
+                        for(int l=0; l<(nodes2.length-1);l++){
+                            cp.getPT().getLink(nodes2[l], nodes2[l+1]).addUsage();
+                            //System.out.println("Uso entre no "+nodes[l]+" e no "+nodes[l+1]+" = "+cp.getPT().getLink(nodes[l], nodes[l+1]).getUsage());
+                        }
+                        return;   
+                    } else {
+                        // Something wrong
+                        // Dealocates the lightpath in VT and try again
+                        cp.getVT().deallocatedLightpath(id2);
                     }
-                    return;   
-                } else {
-                    // Something wrong
-                    // Dealocates the lightpath in VT and try again
-                    cp.getVT().deallocatedLightpath(id2);
                 }
             }
+            cp.blockFlow(flow.getID());
+            }
         }
-        cp.blockFlow(flow.getID());
+        else{
+            this.graphALLPI = cp.getPT().getUsageGraph();
+            nodes2 = Dijkstra.getShortestPath(graphALLPI, flow.getSource(), flow.getDestination());
+            // Create the links vector
+            links2 = new int[nodes2.length - 1];
+            for (int j = 0; j < nodes2.length - 1; j++) {
+                links2[j] = cp.getPT().getLink(nodes2[j], nodes2[j + 1]).getID();
+            }
+
+
+            // PHYSICAL
+
+            if (checkPhysicalLink(links2,rate) == false) {
+                cp.blockFlow(flow.getID()); 
+                return;
+            }
+
+            // First-Fit wavelength assignment
+            wvls2 = new int[links2.length];
+            for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
+                // Create the wavelengths vector
+                for (int j = 0; j < links2.length; j++) {
+                    wvls2[j] = i;
+                }
+                // Now you create the lightpath to use the createLightpath VT
+                WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
+                // Now you try to establish the new lightpath, accept the call
+                if ((id2 = cp.getVT().createLightpath(lp)) >= 0) {
+                    // Single-hop routing (end-to-end lightpath)
+                    lps2[0] = cp.getVT().getLightpath(id2);
+                    if (cp.acceptFlow(flow.getID(), lps2)) {
+                        for(int l=0; l<(nodes2.length-1);l++){
+                            cp.getPT().getLink(nodes2[l], nodes2[l+1]).addUsage();
+                            //System.out.println("Uso entre no "+nodes[l]+" e no "+nodes[l+1]+" = "+cp.getPT().getLink(nodes[l], nodes[l+1]).getUsage());
+                        }
+                        return;   
+                    } else {
+                        // Something wrong
+                        // Dealocates the lightpath in VT and try again
+                        cp.getVT().deallocatedLightpath(id2);
+                    }
+                }
+            }
+            cp.blockFlow(flow.getID());
+        }   
     }
     
 
