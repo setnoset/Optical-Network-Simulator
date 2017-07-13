@@ -10,13 +10,13 @@
         <calls holding-time="1" rate="40000" cos="0" weight="1"/>
     </traffic>
 
-    <allpi OSNR="10000.0" PMD="7e-14" delta="2.5e-12" exponencial="0" threshold="28">
+    <allpi OSNR="10000.0" PMD="7e-14" delta="2.5e-12" exponencial="0" threshold="14">
     </allpi>
 
     <virtual-topology  name="NSFNet">
     </virtual-topology>
 
-    <physical-topology name="NSFNet" wavelengths="40">
+    <physical-topology name="NSFNet" wavelengths="20">
         <nodes>
             <node id="0" grooming-in-ports="32" grooming-out-ports="32" wlconverters="0" wlconversion-range="0"/>
             <node id="1" grooming-in-ports="32" grooming-out-ports="32" wlconverters="0" wlconversion-range="0"/>
