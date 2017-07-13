@@ -161,10 +161,11 @@ public class Simulator {
             /*
              * Extract PMD OSNR delta
              */
-            pt.setOSNR(Double.parseDouble(((Element) doc.getElementsByTagName("traffic").item(0)).getAttribute("OSNR")));
-            pt.setPMD(Double.parseDouble(((Element) doc.getElementsByTagName("traffic").item(0)).getAttribute("PMD")));
-            pt.setdelta(Double.parseDouble(((Element) doc.getElementsByTagName("traffic").item(0)).getAttribute("delta")));
-            pt.setexponencial(Integer.parseInt(((Element) doc.getElementsByTagName("traffic").item(0)).getAttribute("exponencial")));
+            pt.setOSNR(Double.parseDouble(((Element) doc.getElementsByTagName("allpi").item(0)).getAttribute("OSNR")));
+            pt.setPMD(Double.parseDouble(((Element) doc.getElementsByTagName("allpi").item(0)).getAttribute("PMD")));
+            pt.setDelta(Double.parseDouble(((Element) doc.getElementsByTagName("allpi").item(0)).getAttribute("delta")));
+            pt.setExponencial(Integer.parseInt(((Element) doc.getElementsByTagName("allpi").item(0)).getAttribute("exponencial")));
+            pt.setThreshold(Integer.parseInt(((Element) doc.getElementsByTagName("allpi").item(0)).getAttribute("threshold")));
             
             MyStatistics st = MyStatistics.getMyStatisticsObject();
             int numberOfCOS = 0;

@@ -30,7 +30,6 @@ public class ALLPI_PLUS implements RA {
     public void flowArrival(Flow flow) {
         double rate = flow.getRate()/1000;
         boolean checkThreshold;
-        int threshold = 28;
         int[] nodes;
         int[] nodes2;
         int[] links;
@@ -55,8 +54,8 @@ public class ALLPI_PLUS implements RA {
         for (int j = 0; j < nodes.length - 1; j++) {
             links[j] = cp.getPT().getLink(nodes[j], nodes[j + 1]).getID();
         }
-        checkThreshold = cp.getPT().CheckLinkThreshold(links, threshold);
-        
+        checkThreshold = cp.getPT().CheckLinkThreshold(nodes);
+        System.out.println(checkThreshold);
         if(checkThreshold==false){
             wvls = new int[links.length];
             for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
@@ -103,9 +102,9 @@ public class ALLPI_PLUS implements RA {
                     wvls2[j] = i;
                 }
                 // Now you create the lightpath to use the createLightpath VT
-                WDMLightPath lp2 = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
+                WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links2, wvls2);
                 // Now you try to establish the new lightpath, accept the call
-                if ((id2 = cp.getVT().createLightpath(lp2)) >= 0) {
+                if ((id2 = cp.getVT().createLightpath(lp)) >= 0) {
                     // Single-hop routing (end-to-end lightpath)
                     lps2[0] = cp.getVT().getLightpath(id2);
                     if (cp.acceptFlow(flow.getID(), lps2)) {

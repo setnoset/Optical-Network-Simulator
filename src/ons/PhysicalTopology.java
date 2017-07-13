@@ -26,6 +26,7 @@ public abstract class PhysicalTopology {
     protected double PMD;
     protected double delta;
     protected int exponencial;
+    protected int threshold;
 
     /**
      * Creates a new PhysicalTopology object. Takes the XML file containing all
@@ -59,10 +60,13 @@ public abstract class PhysicalTopology {
     public void setOSNR(double OSNR){
         this.OSNR = OSNR;
     }
-    public void setdelta(double delta){
+    public void setThreshold(int threshold){
+        this.threshold = threshold;
+    }
+    public void setDelta(double delta){
         this.delta = delta;
     }
-    public void setexponencial(int exponencial){
+    public void setExponencial(int exponencial){
         this.exponencial = exponencial;
     }
     /**
@@ -183,9 +187,11 @@ public abstract class PhysicalTopology {
         return g;
     }
     
-    public boolean CheckLinkThreshold(int links[], int threshold){
-        for (int i = 0; i < links.length - 1; i++) {
-            if (getLink(links[i],links[i+1]).getUsage()>threshold) {
+    public boolean CheckLinkThreshold(int nodes[]){
+        for (int i = 0; i < nodes.length - 1; i++) {
+            System.out.println(getLink(nodes[i]).getUsage());
+            if (getLink(nodes[i],nodes[i+1]).getUsage()>this.threshold) {
+                System.out.println(getLink(nodes[i]).getUsage());
                 return true;
             }
         }
