@@ -42,42 +42,42 @@ public class ALLPI_PLUS implements RA {
         LightPath[] lps2 = new LightPath[1];
         // Shortest-Path routing
         nodes = Dijkstra.getShortestPath(graph, flow.getSource(), flow.getDestination());
-
         // If no possible path found, block the call
         if (nodes.length == 0) {
             cp.blockFlow(flow.getID()); 
             return;
         }
-        
-        // Create the links vector
-        links = new int[nodes.length - 1];
-        for (int j = 0; j < nodes.length - 1; j++) {
-            links[j] = cp.getPT().getLink(nodes[j], nodes[j + 1]).getID();
-        }
         checkThreshold = cp.getPT().CheckLinkThreshold(nodes);
-        System.out.println(checkThreshold);
+        // Create the links vector
         if(checkThreshold==false){
+            links = new int[nodes.length - 1];
+            for (int j = 0; j < nodes.length - 1; j++) {
+                links[j] = cp.getPT().getLink(nodes[j], nodes[j + 1]).getID();
+            }
             wvls = new int[links.length];
             for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
+                // Create the wavelengths vector
                 for (int j = 0; j < links.length; j++) {
                     wvls[j] = i;
                 }
-            }
-            WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links, wvls);
-            if ((id = cp.getVT().createLightpath(lp)) >= 0) {
-                // Single-hop routing (end-to-end lightpath)
-                lps[0] = cp.getVT().getLightpath(id);
-                if (cp.acceptFlow(flow.getID(), lps)) {
-                    for(int l=0; l<(nodes.length-1);l++){
-                        cp.getPT().getLink(nodes[l], nodes[l+1]).addUsage();
+                // Now you create the lightpath to use the createLightpath VT
+                WDMLightPath lp = new WDMLightPath(1, flow.getSource(), flow.getDestination(), links, wvls);
+                // Now you try to establish the new lightpath, accept the call
+                if ((id = cp.getVT().createLightpath(lp)) >= 0) {
+                    // Single-hop routing (end-to-end lightpath)
+                    lps[0] = cp.getVT().getLightpath(id);
+                    if (cp.acceptFlow(flow.getID(), lps)) {
+                        for(int l=0; l<(nodes.length-1);l++){
+                            cp.getPT().getLink(nodes[l], nodes[l+1]).addUsage();
+                        }
+                        return;
+                    } else {
+                        // Something wrong
+                        // Dealocates the lightpath in VT and try again
+                        cp.getVT().deallocatedLightpath(id);
                     }
-                    return;
-                } else {
-                    // Something wrong
-                    // Dealocates the lightpath in VT and try again
-                    cp.getVT().deallocatedLightpath(id);
+                    cp.blockFlow(flow.getID());
                 }
-            cp.blockFlow(flow.getID());
             }
         }
         else{
@@ -110,7 +110,6 @@ public class ALLPI_PLUS implements RA {
                     if (cp.acceptFlow(flow.getID(), lps2)) {
                         for(int l=0; l<(nodes2.length-1);l++){
                             cp.getPT().getLink(nodes2[l], nodes2[l+1]).addUsage();
-                            //System.out.println("Uso entre no "+nodes[l]+" e no "+nodes[l+1]+" = "+cp.getPT().getLink(nodes[l], nodes[l+1]).getUsage());
                         }
                         return;   
                     } else {

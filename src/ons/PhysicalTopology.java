@@ -189,9 +189,7 @@ public abstract class PhysicalTopology {
     
     public boolean CheckLinkThreshold(int nodes[]){
         for (int i = 0; i < nodes.length - 1; i++) {
-            System.out.println(getLink(nodes[i]).getUsage());
             if (getLink(nodes[i],nodes[i+1]).getUsage()>this.threshold) {
-                System.out.println(getLink(nodes[i]).getUsage());
                 return true;
             }
         }
@@ -215,11 +213,11 @@ public abstract class PhysicalTopology {
                     else if(exponencial==2){
                         int usage;
                         usage = getLink(i, j).getUsage();
-                        if(usage<=20){
+                        if(usage<this.threshold){
                             g.addEdge(i, j, 1);
                         }
                         else{
-                            g.addEdge(i, j, getLink(i, j).getUsage());
+                            g.addEdge(i, j, 10);
                         }
                     }
                     else{

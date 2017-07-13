@@ -46,7 +46,6 @@ public class PAPER implements RA {
         this.graph2 = cp.getPT().getUsageGraph();
         // Shortest-Path routing
         nodes = Dijkstra.getShortestPath(graph2, flow.getSource(), flow.getDestination());
-        
         // If no possible path found, block the call
         if (nodes.length == 0) {
             cp.blockFlow(flow.getID()); 
@@ -58,7 +57,7 @@ public class PAPER implements RA {
         for (int j = 0; j < nodes.length - 1; j++) {
             links[j] = cp.getPT().getLink(nodes[j], nodes[j + 1]).getID();
         }
-
+        
         // First-Fit wavelength assignment
         wvls = new int[links.length];
         for (int i = 0; i < ((WDMPhysicalTopology) cp.getPT()).getNumWavelengths(); i++) {
@@ -73,15 +72,19 @@ public class PAPER implements RA {
                 // Single-hop routing (end-to-end lightpath)
                 lps[0] = cp.getVT().getLightpath(id);
                 if (cp.acceptFlow(flow.getID(), lps)) {
+                    for(int l=0; l<(nodes.length-1);l++){
+                        cp.getPT().getLink(nodes[l], nodes[l+1]).addUsage();
+                    }
                     return;
                 } else {
                     // Something wrong
                     // Dealocates the lightpath in VT and try again
                     cp.getVT().deallocatedLightpath(id);
                 }
+                // Block the call
+                
             }
         }
-        // Block the call
         cp.blockFlow(flow.getID());
     }
 

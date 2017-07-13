@@ -79,7 +79,7 @@ public class ALLPI implements RA {
                 }
             }
         }
-        
+
         this.graphALLPI = cp.getPT().getUsageGraph();
         nodes2 = Dijkstra.getShortestPath(graphALLPI, flow.getSource(), flow.getDestination());
         // Create the links vector
